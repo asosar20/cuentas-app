@@ -1,0 +1,170 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f6f8fa;
+}
+
+.app-container {
+  max-width: 600px;
+  margin: auto;
+  padding: 16px;
+}
+
+.titulo {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.formulario label {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="datetime-local"] {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-top: 4px;
+}
+
+.radio-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.botones {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  flex: 1;
+  margin-left: 8px;
+}
+
+.btn-secondary {
+  background: #e0e0e0;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  flex: 1;
+}
+
+.resumen {
+  margin-top: 20px;
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.cards {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.card {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.card.ingreso {
+  background: #d1f7d1;
+}
+
+.card.salida {
+  background: #ffd6d6;
+}
+
+.card.ahorro {
+  background: #d6eaff;
+}
+
+.lista {
+  margin-top: 20px;
+}
+
+.lista h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.lista ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lista li {
+  display: grid;
+  grid-template-columns: 80px 80px 1fr 70px;
+  background: white;
+  padding: 8px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  font-size: 14px;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.lista li .ingreso {
+  color: green;
+  font-weight: bold;
+}
+
+.lista li .salida {
+  color: red;
+  font-weight: bold;
+}
+
+
+.lista li {
+  display: grid;
+  grid-template-columns: 80px 80px 1fr 80px 40px;
+  background: white;
+  padding: 8px;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  font-size: 14px;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.btn-eliminar {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #ff4d4d;
+  transition: 0.2s;
+}
+
+.btn-eliminar:hover {
+  transform: scale(1.2);
+}
+

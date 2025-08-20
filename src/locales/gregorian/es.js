@@ -1,3 +1,4 @@
+// ./locales/gregorian/es.js
 const gregorian_es = {
   name: "gregorian_es",
   months: [
@@ -14,19 +15,20 @@ const gregorian_es = {
     ["Noviembre", "Nov"],
     ["Diciembre", "Dic"],
   ],
+  // IMPORTANTE: empezar en SÁBADO
   weekDays: [
-    ["Domingo", "Do"],
-    ["Lunes", "Lu"],
-    ["Martes", "Ma"],
-    ["Miércoles", "Mi"],
-    ["Jueves", "Ju"],
-    ["Viernes", "Vi"],
-    ["Sábado", "Sa"],
+    ["Sábado", "Sáb"],
+    ["Domingo", "Dom"],
+    ["Lunes", "Lun"],
+    ["Martes", "Mar"],
+    ["Miércoles", "Mié"],
+    ["Jueves", "Jue"],
+    ["Viernes", "Vie"],
   ],
   digits: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
   meridiems: [
-    ["AM", "AM"],
-    ["PM", "PM"],
+    ["AM", "am"],
+    ["PM", "pm"],
   ],
 };
 

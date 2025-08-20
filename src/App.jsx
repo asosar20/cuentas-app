@@ -35,6 +35,10 @@ function App() {
     return fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual;
   });
 
+  const registrosMesOrdenados = [...registrosMes].sort((a, b) => {
+    return new Date(b.fecha) - new Date(a.fecha)
+  })
+
   const ingresos = registrosMes
     .filter((r) => r.tipoMovimiento === "ingreso")
     .reduce((acc, r) => acc + r.monto, 0);
@@ -88,7 +92,7 @@ function App() {
       <div className="lista">
         <h2>Registros ({registrosMes.length} este mes)</h2>
         <ul>
-          {registrosMes.map((r, i) => (
+          {registrosMesOrdenados.map((r, i) => (
             <li key={i}>
               <span>{new Date(r.fecha).toLocaleDateString()}</span>
               <span className={r.tipoMovimiento === "ingreso" ? "ingreso" : "salida"}>

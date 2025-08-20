@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react'
-import './App.css'
+import { useState, useEffect } from "react";
+import DatePicker from "react-multi-date-picker";
+import "react-multi-date-picker/styles/colors/teal.css";
+import "./App.css";
 
 function App() {
   const [registros, setRegistros] = useState(() => {
@@ -7,25 +9,47 @@ function App() {
     return data ? JSON.parse(data) : [];
   });
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    const form = e.target;
-    const formData = new FormData(form);
-    const formJson = Object.fromEntries(formData.entries());
-    formJson.monto = parseFloat(formJson.monto);
-    setRegistros((prev) => [...prev, formJson]);
-    form.reset();
-  }
+  const [fechas, setFechas] = useState([]); // múltiples fechas seleccionadas
+  const [tipoMovimiento, setTipoMovimiento] = useState("salida");
+  const [concepto, setConcepto] = useState("");
+  const [monto, setMonto] = useState("");
 
-  function eliminarRegistro(index) {
-    const nuevos = registros.filter((_, i) => i !== index);
-    setRegistros(nuevos);
-  }
-
+  // === Guardar en localStorage ===
   useEffect(() => {
     localStorage.setItem("registros", JSON.stringify(registros));
   }, [registros]);
 
+  // === Agregar registros con múltiples fechas ===
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (!concepto || !monto || fechas.length === 0) {
+      alert("Completa todos los campos y selecciona al menos una fecha");
+      return;
+    }
+
+    const nuevos = fechas.map((f) => ({
+      fecha: f.format("YYYY-MM-DD"),
+      tipoMovimiento,
+      concepto,
+      monto: parseFloat(monto),
+    }));
+
+    setRegistros((prev) => [...prev, ...nuevos]);
+
+    // limpiar formulario
+    setFechas([]);
+    setConcepto("");
+    setMonto("");
+    setTipoMovimiento("salida");
+  }
+
+  function eliminarRegistro(indexGlobal) {
+    const nuevos = registros.filter((_, i) => i !== indexGlobal);
+    setRegistros(nuevos);
+  }
+
+  // === FILTRADO POR MES ACTUAL ===
   const ahora = new Date();
   const mesActual = ahora.getMonth();
   const anioActual = ahora.getFullYear();
@@ -35,10 +59,12 @@ function App() {
     return fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual;
   });
 
-  const registrosMesOrdenados = [...registrosMes].sort((a, b) => {
-    return new Date(b.fecha) - new Date(a.fecha)
-  })
+  // ordenar de más reciente a más antiguo
+  const registrosMesOrdenados = [...registrosMes].sort(
+    (a, b) => new Date(b.fecha) - new Date(a.fecha)
+  );
 
+  // === Totales ===
   const ingresos = registrosMes
     .filter((r) => r.tipoMovimiento === "ingreso")
     .reduce((acc, r) => acc + r.monto, 0);
@@ -56,36 +82,80 @@ function App() {
 
       <form method="post" onSubmit={handleSubmit} className="formulario">
         <label>
-          Fecha:
-          <input name="fecha" type="datetime-local" required />
+          Fechas:
+          <DatePicker
+            multiple
+            value={fechas}
+            onChange={setFechas}
+            format="YYYY-MM-DD"
+            className="teal"
+            placeholder="Selecciona una o varias fechas"
+          />
         </label>
         <label>
           Tipo de movimiento:
           <div className="radio-group">
-            <label><input type="radio" name="tipoMovimiento" value="ingreso" /> Ingreso</label>
-            <label><input type="radio" name="tipoMovimiento" value="salida" defaultChecked /> Salida</label>
+            <label>
+              <input
+                type="radio"
+                name="tipoMovimiento"
+                value="ingreso"
+                checked={tipoMovimiento === "ingreso"}
+                onChange={(e) => setTipoMovimiento(e.target.value)}
+              />{" "}
+              Ingreso
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="tipoMovimiento"
+                value="salida"
+                checked={tipoMovimiento === "salida"}
+                onChange={(e) => setTipoMovimiento(e.target.value)}
+              />{" "}
+              Salida
+            </label>
           </div>
         </label>
         <label>
           Concepto:
-          <input name="concepto" type="text" placeholder="Pan..." required />
+          <input
+            type="text"
+            placeholder="Pan..."
+            required
+            value={concepto}
+            onChange={(e) => setConcepto(e.target.value)}
+          />
         </label>
         <label>
           Monto:
-          <input name="monto" type="number" step="0.01" placeholder="247.49" required />
+          <input
+            type="number"
+            step="0.01"
+            placeholder="247.49"
+            required
+            value={monto}
+            onChange={(e) => setMonto(e.target.value)}
+          />
         </label>
         <div className="botones">
-          <button type="reset" className="btn-secondary">Reiniciar</button>
-          <button type="submit" className="btn-primary">Guardar</button>
+          <button type="reset" className="btn-secondary">
+            Reiniciar
+          </button>
+          <button type="submit" className="btn-primary">
+            Guardar
+          </button>
         </div>
       </form>
 
       <div className="resumen">
-        <p><strong>Proyección hasta fin de mes:</strong> {finDeMes}</p>
+        <p>
+          <strong>Proyección hasta fin de mes:</strong> {finDeMes}
+        </p>
         <div className="cards">
           <div className="card ingreso">Ingresos: {ingresos.toFixed(2)}</div>
           <div className="card salida">Salidas: {salidas.toFixed(2)}</div>
-          <div className="card ahorro">Ahorrado: {ahorrado.toFixed(2)}</div>
+          <div className="card ahorro">Ahorrado: {ahorrado.toFixed(2) < 0 ? '0' : ahorrado.toFixed(2)}</div>
         </div>
       </div>
 
@@ -95,18 +165,27 @@ function App() {
           {registrosMesOrdenados.map((r, i) => (
             <li key={i}>
               <span>{new Date(r.fecha).toLocaleDateString()}</span>
-              <span className={r.tipoMovimiento === "ingreso" ? "ingreso" : "salida"}>
+              <span
+                className={
+                  r.tipoMovimiento === "ingreso" ? "ingreso" : "salida"
+                }
+              >
                 {r.tipoMovimiento}
               </span>
               <span>{r.concepto}</span>
               <span>S/ {r.monto.toFixed(2)}</span>
-              <button className="btn-eliminar" onClick={() => eliminarRegistro(i)}>❌</button>
+              <button
+                className="btn-eliminar"
+                onClick={() => eliminarRegistro(i)}
+              >
+                ❌
+              </button>
             </li>
           ))}
         </ul>
       </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

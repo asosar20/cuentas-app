@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import DatePicker from "react-multi-date-picker";
 import "react-multi-date-picker/styles/colors/teal.css";
-import gregorian_es from "./locales/gregorian/es"; // Asumiendo ya cuentas con tu locale
+import gregorian_es from "./locales/gregorian/es";
 import "./App.css";
 
 function App() {
@@ -27,6 +27,7 @@ function App() {
     }
 
     const nuevos = fechas.map((f) => ({
+      id: Date.now() + Math.random(), // 👈 id único
       fecha: f.format("YYYY-MM-DD"),
       tipoMovimiento,
       concepto,
@@ -41,8 +42,8 @@ function App() {
     setTipoMovimiento("salida");
   }
 
-  function eliminarRegistro(indice) {
-    setRegistros(registros.filter((_, i) => i !== indice));
+  function eliminarRegistro(id) {
+    setRegistros((prev) => prev.filter((r) => r.id !== id));
   }
 
   // Conversión segura de fecha (sin desfase UTC)
@@ -171,15 +172,15 @@ function App() {
       <div className="lista">
         <h2>Registros ({registrosMes.length} este mes)</h2>
         <ul>
-          {registrosMesOrdenados.map((r, i) => (
-            <li key={i}>
+          {registrosMesOrdenados.map((r) => (
+            <li key={r.id}>
               <span>{parseFechaLocal(r.fecha).toLocaleDateString("es-PE")}</span>
               <span className={r.tipoMovimiento === "ingreso" ? "ingreso" : "salida"}>
                 {r.tipoMovimiento}
               </span>
               <span>{r.concepto}</span>
               <span>S/ {r.monto.toFixed(2)}</span>
-              <button className="btn-eliminar" onClick={() => eliminarRegistro(i)}>
+              <button className="btn-eliminar" onClick={() => eliminarRegistro(r.id)}>
                 ❌
               </button>
             </li>

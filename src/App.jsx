@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import DatePicker from "react-multi-date-picker";
 import "react-multi-date-picker/styles/colors/teal.css";
+import gregorian_es from "./locales/gregorian/es"; // Asumiendo ya cuentas con tu locale
 import "./App.css";
 
 function App() {
@@ -9,20 +10,17 @@ function App() {
     return data ? JSON.parse(data) : [];
   });
 
-  const [fechas, setFechas] = useState([]); // múltiples fechas seleccionadas
+  const [fechas, setFechas] = useState([]);
   const [tipoMovimiento, setTipoMovimiento] = useState("salida");
   const [concepto, setConcepto] = useState("");
   const [monto, setMonto] = useState("");
 
-  // === Guardar en localStorage ===
   useEffect(() => {
     localStorage.setItem("registros", JSON.stringify(registros));
   }, [registros]);
 
-  // === Agregar registros con múltiples fechas ===
   function handleSubmit(e) {
     e.preventDefault();
-
     if (!concepto || !monto || fechas.length === 0) {
       alert("Completa todos los campos y selecciona al menos una fecha");
       return;
@@ -37,34 +35,37 @@ function App() {
 
     setRegistros((prev) => [...prev, ...nuevos]);
 
-    // limpiar formulario
     setFechas([]);
     setConcepto("");
     setMonto("");
     setTipoMovimiento("salida");
   }
 
-  function eliminarRegistro(indexGlobal) {
-    const nuevos = registros.filter((_, i) => i !== indexGlobal);
-    setRegistros(nuevos);
+  function eliminarRegistro(indice) {
+    setRegistros(registros.filter((_, i) => i !== indice));
   }
 
-  // === FILTRADO POR MES ACTUAL ===
+  // Conversión segura de fecha (sin desfase UTC)
+  function parseFechaLocal(fechaStr) {
+    const [anio, mes, dia] = fechaStr.split("-").map(Number);
+    return new Date(anio, mes - 1, dia);
+  }
+
   const ahora = new Date();
   const mesActual = ahora.getMonth();
   const anioActual = ahora.getFullYear();
 
   const registrosMes = registros.filter((r) => {
-    const fecha = new Date(r.fecha);
-    return fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual;
+    const fecha = parseFechaLocal(r.fecha);
+    return (
+      fecha.getMonth() === mesActual && fecha.getFullYear() === anioActual
+    );
   });
 
-  // ordenar de más reciente a más antiguo
   const registrosMesOrdenados = [...registrosMes].sort(
-    (a, b) => new Date(b.fecha) - new Date(a.fecha)
+    (a, b) => parseFechaLocal(b.fecha) - parseFechaLocal(a.fecha)
   );
 
-  // === Totales ===
   const ingresos = registrosMes
     .filter((r) => r.tipoMovimiento === "ingreso")
     .reduce((acc, r) => acc + r.monto, 0);
@@ -74,24 +75,27 @@ function App() {
     .reduce((acc, r) => acc + r.monto, 0);
 
   const ahorrado = ingresos - salidas;
-  const finDeMes = new Date(anioActual, mesActual + 1, 0).toLocaleDateString();
+  const finDeMes = new Date(anioActual, mesActual + 1, 0).toLocaleDateString("es-PE");
 
   return (
     <div className="app-container">
       <h1 className="titulo">CuentasApp</h1>
 
-      <form method="post" onSubmit={handleSubmit} className="formulario">
+      <form onSubmit={handleSubmit} className="formulario">
         <label>
           Fechas:
           <DatePicker
             multiple
+            locale={gregorian_es}
             value={fechas}
             onChange={setFechas}
             format="YYYY-MM-DD"
+            weekStartDayIndex={1}
             className="teal"
             placeholder="Selecciona una o varias fechas"
           />
         </label>
+
         <label>
           Tipo de movimiento:
           <div className="radio-group">
@@ -117,6 +121,7 @@ function App() {
             </label>
           </div>
         </label>
+
         <label>
           Concepto:
           <input
@@ -127,6 +132,7 @@ function App() {
             onChange={(e) => setConcepto(e.target.value)}
           />
         </label>
+
         <label>
           Monto:
           <input
@@ -138,6 +144,7 @@ function App() {
             onChange={(e) => setMonto(e.target.value)}
           />
         </label>
+
         <div className="botones">
           <button type="reset" className="btn-secondary">
             Reiniciar
@@ -155,7 +162,9 @@ function App() {
         <div className="cards">
           <div className="card ingreso">Ingresos: {ingresos.toFixed(2)}</div>
           <div className="card salida">Salidas: {salidas.toFixed(2)}</div>
-          <div className="card ahorro">Ahorrado: {ahorrado.toFixed(2) < 0 ? '0' : ahorrado.toFixed(2)}</div>
+          <div className="card ahorro">
+            Ahorrado: {ahorrado < 0 ? "0.00" : ahorrado.toFixed(2)}
+          </div>
         </div>
       </div>
 
@@ -164,20 +173,13 @@ function App() {
         <ul>
           {registrosMesOrdenados.map((r, i) => (
             <li key={i}>
-              <span>{new Date(r.fecha).toLocaleDateString()}</span>
-              <span
-                className={
-                  r.tipoMovimiento === "ingreso" ? "ingreso" : "salida"
-                }
-              >
+              <span>{parseFechaLocal(r.fecha).toLocaleDateString("es-PE")}</span>
+              <span className={r.tipoMovimiento === "ingreso" ? "ingreso" : "salida"}>
                 {r.tipoMovimiento}
               </span>
               <span>{r.concepto}</span>
               <span>S/ {r.monto.toFixed(2)}</span>
-              <button
-                className="btn-eliminar"
-                onClick={() => eliminarRegistro(i)}
-              >
+              <button className="btn-eliminar" onClick={() => eliminarRegistro(i)}>
                 ❌
               </button>
             </li>
